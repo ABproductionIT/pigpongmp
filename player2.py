@@ -35,8 +35,8 @@ class PongBall(Widget):
         file = open("temp.txt", "r")
         a = file.read()
         try:
-           b = list(map(float, a.split(", ")))
-           self.pos = b
+            b = list(map(float, a.split(", ")))
+            self.pos = b
         except:
             pass
         # type of self.pos is <class 'kivy.properties.ObservableReferenceList'>
@@ -59,6 +59,15 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        file1 = open("tempplayer.txt", "r")
+        t = file1.read()
+        print(t)
+        try:
+            self.player1.center_y = float(t)
+        except:
+            pass
+        file1.close()
+
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):
             self.ball.velocity_y *= -1  # инверсируем текущую скорость по оси Y
@@ -79,8 +88,7 @@ class PongGame(Widget):
     # Событие прикосновения к экрану
     def on_touch_move(self, touch):
         # первый игрок может касаться только своей части экрана (левой)
-        if touch.x < self.width / 3:
-            self.player1.center_y = touch.y
+
 
         # второй игрок может касаться только своей части экрана (правой)
         if touch.x > self.width - self.width / 3:

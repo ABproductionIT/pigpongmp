@@ -37,7 +37,7 @@ class PongBall(Widget):
     def move(self):
         file = open("temp.txt", "w")
         self.pos = Vector(*self.velocity) + self.pos
-        print(self.pos)
+        # print(self.pos)
         # type of self.pos is <class 'kivy.properties.ObservableReferenceList'>
         file.write(str(self.pos[0]) + ", " + str(self.pos[1]))
         file.close()
@@ -80,7 +80,12 @@ class PongGame(Widget):
     def on_touch_move(self, touch):
         # первый игрок может касаться только своей части экрана (левой)
         if touch.x < self.width / 3:
+            file = open("tempplayer.txt", "w")
             self.player1.center_y = touch.y
+            print(touch.y)
+            file.write(str(self.player1.center_y))
+            file.close()
+
 
         # второй игрок может касаться только своей части экрана (правой)
         if touch.x > self.width - self.width / 3:
