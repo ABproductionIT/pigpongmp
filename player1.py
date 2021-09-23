@@ -59,6 +59,15 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        file1 = open("tempplayer2.txt", "r")
+        t = file1.read()
+        print(t)
+        try:
+            self.player2.center_y = float(t)
+        except:
+            pass
+        file1.close()
+
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):
             self.ball.velocity_y *= -1  # инверсируем текущую скорость по оси Y
@@ -87,9 +96,6 @@ class PongGame(Widget):
             file.close()
 
 
-        # второй игрок может касаться только своей части экрана (правой)
-        if touch.x > self.width - self.width / 3:
-            self.player2.center_y = touch.y
 
 
 class PongApp(App):

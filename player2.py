@@ -88,11 +88,12 @@ class PongGame(Widget):
     # Событие прикосновения к экрану
     def on_touch_move(self, touch):
         # первый игрок может касаться только своей части экрана (левой)
-
-
         # второй игрок может касаться только своей части экрана (правой)
         if touch.x > self.width - self.width / 3:
+            file = open("tempplayer2.txt", "w")
             self.player2.center_y = touch.y
+            file.write(str(self.player2.center_y))
+            file.close()
 
 
 class PongApp(App):
