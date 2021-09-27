@@ -20,6 +20,9 @@ server1.bind(("127.0.0.1", 12346))
 server1.listen()
 user1, addres1 = server1.accept()
 
+client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client1.connect(("127.0.0.1", 12347))
+
 
 class PongPaddle(Widget):
     score = NumericProperty(0)  # очки игрока
@@ -69,15 +72,21 @@ class PongGame(Widget):
         p = str(self.player1.center_y)
         user1.send(p.encode("utf-8"))
 
-        file1 = open("tempplayer2.txt", "r")
-        # data = server.recv(1024)
-        # t = data.decode("utf-8")
-        t = file1.read()
+        datax = client1.recv(1024)
+        t = datax.decode("utf-8")
         try:
             self.player2.center_y = float(t)
         except:
             pass
-        file1.close()
+        # file1 = open("tempplayer2.txt", "r")
+        # # data = server.recv(1024)
+        # # t = data.decode("utf-8")
+        # t = file1.read()
+        # try:
+        #     self.player2.center_y = float(t)
+        # except:
+        #     pass
+        # file1.close()
 
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):

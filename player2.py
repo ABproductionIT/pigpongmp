@@ -18,6 +18,11 @@ client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client1.connect(("127.0.0.1", 12346))
 
 
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("127.0.0.1", 12347))
+server.listen()
+user, addres = server.accept()
+
 
 class PongPaddle(Widget):
     score = NumericProperty(0)  # очки игрока
@@ -68,6 +73,9 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        p = str(self.player2.center_y)
+        user.send(p.encode("utf-8"))
+
         # file1 = open("tempplayer.txt", "r")
         # t = file1.read()
         datax = client1.recv(1024)
@@ -99,10 +107,7 @@ class PongGame(Widget):
     def on_touch_move(self, touch):
         # второй игрок может касаться только своей части экрана (правой)
         if touch.x > self.width - self.width / 3:
-            file = open("tempplayer2.txt", "w")
             self.player2.center_y = touch.y
-            file.write(str(self.player2.center_y))
-            file.close()
             # k = str(self.player2.center_y)
             # client.send(k.encode("utf-8"))
 
