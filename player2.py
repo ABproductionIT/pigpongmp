@@ -7,7 +7,6 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
 import socket
-import asyncio
 
 # client for ball position data
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
