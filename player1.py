@@ -7,19 +7,20 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
 import socket
-import asyncio
 
+# socket serv for ball position send to player 2
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("127.0.0.1", 12345))
 server.listen()
 user, addres = server.accept()
 
-
+# socket serv for send player1 position to player2
 server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server1.bind(("127.0.0.1", 12346))
 server1.listen()
 user1, addres1 = server1.accept()
 
+# socket clinet for incoming data from player2 position
 client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client1.connect(("127.0.0.1", 12347))
 
@@ -49,7 +50,9 @@ class PongBall(Widget):
     # Заставим шарик двигаться
     def move(self):
         self.pos = Vector(*self.velocity) + self.pos
+        # make data to string for send
         d = str(self.pos[0]) + ", " + str(self.pos[1])
+        # send data about ball position x, y to player2
         user.send(d.encode("utf-8"))
 
 
@@ -69,24 +72,17 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        # send player1 data to player2
         p = str(self.player1.center_y)
         user1.send(p.encode("utf-8"))
 
+        # recv data from player2 about his position
         datax = client1.recv(1024)
         t = datax.decode("utf-8")
         try:
             self.player2.center_y = float(t)
         except:
             pass
-        # file1 = open("tempplayer2.txt", "r")
-        # # data = server.recv(1024)
-        # # t = data.decode("utf-8")
-        # t = file1.read()
-        # try:
-        #     self.player2.center_y = float(t)
-        # except:
-        #     pass
-        # file1.close()
 
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):

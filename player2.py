@@ -9,15 +9,15 @@ from random import randint
 import socket
 import asyncio
 
-
+# client for ball position data
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(("127.0.0.1", 12345))
 
-
+# client for player1 position data
 client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client1.connect(("127.0.0.1", 12346))
 
-
+# server socket for send player2 position to player1
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("127.0.0.1", 12347))
 server.listen()
@@ -50,6 +50,7 @@ class PongBall(Widget):
     def move(self):
         data = client.recv(1024)
         a = data.decode("utf-8")
+        # data from player1 ball position socket
         try:
             b = list(map(float, a.split(", ")))
             self.pos = b
@@ -73,11 +74,11 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        # this is send data about player2 position to player1
         p = str(self.player2.center_y)
         user.send(p.encode("utf-8"))
 
-        # file1 = open("tempplayer.txt", "r")
-        # t = file1.read()
+        # data from player1  position socket
         datax = client1.recv(1024)
         t = datax.decode("utf-8")
         try:
