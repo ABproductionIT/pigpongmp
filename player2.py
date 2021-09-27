@@ -7,10 +7,16 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
 import socket
+import asyncio
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(("127.0.0.1", 12345))
+
+
+client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client1.connect(("127.0.0.1", 12346))
+
 
 
 class PongPaddle(Widget):
@@ -37,10 +43,8 @@ class PongBall(Widget):
 
     # Заставим шарик двигаться
     def move(self):
-
         data = client.recv(1024)
         a = data.decode("utf-8")
-
         try:
             b = list(map(float, a.split(", ")))
             self.pos = b
@@ -64,14 +68,15 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
-        file1 = open("tempplayer.txt", "r")
-        t = file1.read()
-        print(t)
+        # file1 = open("tempplayer.txt", "r")
+        # t = file1.read()
+        datax = client1.recv(1024)
+        t = datax.decode("utf-8")
         try:
             self.player1.center_y = float(t)
         except:
             pass
-        file1.close()
+        # file1.close()
 
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):
@@ -92,13 +97,14 @@ class PongGame(Widget):
 
     # Событие прикосновения к экрану
     def on_touch_move(self, touch):
-        # первый игрок может касаться только своей части экрана (левой)
         # второй игрок может касаться только своей части экрана (правой)
         if touch.x > self.width - self.width / 3:
             file = open("tempplayer2.txt", "w")
             self.player2.center_y = touch.y
             file.write(str(self.player2.center_y))
             file.close()
+            # k = str(self.player2.center_y)
+            # client.send(k.encode("utf-8"))
 
 
 class PongApp(App):

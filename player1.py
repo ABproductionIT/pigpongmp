@@ -7,15 +7,18 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
 import socket
+import asyncio
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("127.0.0.1", 12345))
-
 server.listen()
-
 user, addres = server.accept()
 
-# file = open("temp.txt", "w+")
+
+server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server1.bind(("127.0.0.1", 12346))
+server1.listen()
+user1, addres1 = server1.accept()
 
 
 class PongPaddle(Widget):
@@ -63,9 +66,13 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        p = str(self.player1.center_y)
+        user1.send(p.encode("utf-8"))
+
         file1 = open("tempplayer2.txt", "r")
+        # data = server.recv(1024)
+        # t = data.decode("utf-8")
         t = file1.read()
-        print(t)
         try:
             self.player2.center_y = float(t)
         except:
@@ -93,11 +100,8 @@ class PongGame(Widget):
     def on_touch_move(self, touch):
         # первый игрок может касаться только своей части экрана (левой)
         if touch.x < self.width / 3:
-            file = open("tempplayer.txt", "w")
             self.player1.center_y = touch.y
-            print(touch.y)
-            file.write(str(self.player1.center_y))
-            file.close()
+
 
 
 class PongApp(App):
