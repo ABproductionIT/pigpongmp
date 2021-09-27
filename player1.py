@@ -6,9 +6,16 @@ from kivy.properties import (
 from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
+import socket
 
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("127.0.0.1", 12345))
 
-file = open("temp.txt", "w+")
+server.listen()
+
+user, addres = server.accept()
+
+# file = open("temp.txt", "w+")
 
 
 class PongPaddle(Widget):
@@ -35,12 +42,9 @@ class PongBall(Widget):
 
     # Заставим шарик двигаться
     def move(self):
-        file = open("temp.txt", "w")
         self.pos = Vector(*self.velocity) + self.pos
-        # print(self.pos)
-        # type of self.pos is <class 'kivy.properties.ObservableReferenceList'>
-        file.write(str(self.pos[0]) + ", " + str(self.pos[1]))
-        file.close()
+        d = str(self.pos[0]) + ", " + str(self.pos[1])
+        user.send(d.encode("utf-8"))
 
 
 class PongGame(Widget):
@@ -96,15 +100,12 @@ class PongGame(Widget):
             file.close()
 
 
-
-
 class PongApp(App):
     def build(self):
         game = PongGame()
         game.serve_ball()
         Clock.schedule_interval(game.update, 1.0 / 60)  # 60 FPS
         return game
-
 
 
 if __name__ == '__main__':
