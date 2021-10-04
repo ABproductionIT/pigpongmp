@@ -7,22 +7,29 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
 import socket
+import json
 
 # socket serv for ball position send to player 2
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(("127.0.0.1", 12345))
-server.listen()
-user, addres = server.accept()
-
+# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server.bind(("127.0.0.1", 12345))
+# server.listen()
+# user, addres = server.accept()
+#
 # socket serv for send player1 position to player2
-server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server1.bind(("127.0.0.1", 12346))
-server1.listen()
-user1, addres1 = server1.accept()
+# server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server1.bind(("127.0.0.1", 12346))
+# server1.listen()
+# user1, addres1 = server1.accept()
 
 # socket clinet for incoming data from player2 position
-client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client1.connect(("127.0.0.1", 12347))
+# client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# client1.connect(("127.0.0.1", 12347))
+ClientSocket = socket.socket()
+host = '127.0.0.1'
+port = 1233
+
+print('Waiting for connection')
+ClientSocket.connect((host, port))
 
 
 class PongPaddle(Widget):
@@ -51,9 +58,9 @@ class PongBall(Widget):
     def move(self):
         self.pos = Vector(*self.velocity) + self.pos
         # make data to string for send
-        d = str(self.pos[0]) + ", " + str(self.pos[1])
+        # sharik = str(self.pos[0]) + ", " + str(self.pos[1])
         # send data about ball position x, y to player2
-        user.send(d.encode("utf-8"))
+        # user.send(sharik.encode("utf-8"))
 
 
 class PongGame(Widget):
@@ -73,14 +80,20 @@ class PongGame(Widget):
         self.player2.bounce_ball(self.ball)
 
         # send player1 data to player2
-        p = str(self.player1.center_y)
-        user1.send(p.encode("utf-8"))
+        p1data = str(self.player1.center_y)
+        # user1.send(p1data.encode("utf-8"))
+
+        sharik = str(self.ball.x) + ", " + str(self.ball.y)
+        jsonResult = {"player1": p1data, "ballpos": sharik}
+        jsonResult = json.dumps(jsonResult)
+        ClientSocket.send(str(jsonResult).encode('utf-8'))
 
         # recv data from player2 about his position
-        datax = client1.recv(1024)
-        t = datax.decode("utf-8")
+        Response = ClientSocket.recv(1024)
         try:
-            self.player2.center_y = float(t)
+            data = Response.decode('utf-8')
+            y1 = json.loads(data)
+            self.player2.center_y = float(y1['player2'])
         except:
             pass
 
@@ -106,7 +119,6 @@ class PongGame(Widget):
         # первый игрок может касаться только своей части экрана (левой)
         if touch.x < self.width / 3:
             self.player1.center_y = touch.y
-
 
 
 class PongApp(App):

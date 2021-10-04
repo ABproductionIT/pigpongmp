@@ -19,14 +19,17 @@ def threaded_client(connection):
     connection.send(welcome.encode('utf-8'))
     while True:
         if connection == listcli[0]:
-            data = listcli[0].recv(1024)
+            data = listcli[0].recv(2048)
             reply = data.decode('utf-8')
             print(reply, connection)
             if not data:
                 pass
-            listcli[1].send(reply.encode("utf-8"))
+            try:
+                listcli[1].send(reply.encode("utf-8"))
+            except:
+                pass
         elif connection == listcli[1]:
-            data = listcli[1].recv(1024)
+            data = listcli[1].recv(2048)
             reply = data.decode('utf-8')
             print(reply, connection)
             if not data:

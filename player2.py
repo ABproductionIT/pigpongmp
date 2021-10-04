@@ -7,20 +7,29 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
 import socket
+import json
 
 # client for ball position data
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("127.0.0.1", 12345))
+# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# client.connect(("127.0.0.1", 12345))
 
 # client for player1 position data
-client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client1.connect(("127.0.0.1", 12346))
+# client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# client1.connect(("127.0.0.1", 12346))
 
 # server socket for send player2 position to player1
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(("127.0.0.1", 12347))
-server.listen()
-user, addres = server.accept()
+# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server.bind(("127.0.0.1", 12347))
+# server.listen()
+# user, addres = server.accept()
+
+
+ClientSocket = socket.socket()
+host = '127.0.0.1'
+port = 1233
+
+print('Waiting for connection')
+ClientSocket.connect((host, port))
 
 
 class PongPaddle(Widget):
@@ -46,15 +55,13 @@ class PongBall(Widget):
     velocity = ReferenceListProperty(velocity_x, velocity_y)
 
     # Заставим шарик двигаться
-    def move(self):
-        data = client.recv(1024)
-        a = data.decode("utf-8")
+    def move(self, b):
+        # data = client.recv(1024)
+        # a = data.decode("utf-8")
         # data from player1 ball position socket
-        try:
-            b = list(map(float, a.split(", ")))
-            self.pos = b
-        except:
-            pass
+
+        self.pos = b
+
 
 
 class PongGame(Widget):
@@ -67,7 +74,6 @@ class PongGame(Widget):
         self.ball.velocity = Vector(vel[0], vel[1]).rotate(randint(0, 360))
 
     def update(self, dt):
-        self.ball.move()  # двигаем шарик в каждом обновлении экрана
 
         # проверка отскока шарика от панелек игроков
         self.player1.bounce_ball(self.ball)
@@ -75,17 +81,22 @@ class PongGame(Widget):
 
         # this is send data about player2 position to player1
         p = str(self.player2.center_y)
-        user.send(p.encode("utf-8"))
-
-        # data from player1  position socket
-        datax = client1.recv(1024)
-        t = datax.decode("utf-8")
+        jsonResult = {"player2": p}
+        jsonResult = json.dumps(jsonResult)
+        ClientSocket.send(str(jsonResult).encode('utf-8'))
+        # user.send(p.encode("utf-8")
+        Response = ClientSocket.recv(1024)
         try:
-            self.player1.center_y = float(t)
+            data = Response.decode('utf-8')
+            y2 = json.loads(data)
+            # data from player1  position socket
+            self.player1.center_y = float(y2['player1'])
+            b = list(map(float, y2['ballpos'].split(", ")))
+            self.ball.move(b)  # двигаем шарик в каждом обновлении экрана
+
         except:
             pass
         # file1.close()
-
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):
             self.ball.velocity_y *= -1  # инверсируем текущую скорость по оси Y
