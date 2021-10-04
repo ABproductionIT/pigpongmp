@@ -1,4 +1,9 @@
 import socket
+import json
+
+
+jsonResult = {"first":"You're", "second":"Awsome!"}
+jsonResult = json.dumps(jsonResult)
 
 ClientSocket = socket.socket()
 host = '127.0.0.1'
@@ -11,8 +16,10 @@ except socket.error as e:
     print(str(e))
 
 Response = ClientSocket.recv(1024)
+#
+# ClientSocket.send(str.encode(Input))
+
 while True:
-    # Input = input('Say Something: ')
-    # ClientSocket.send(str.encode(Input))
+    ClientSocket.send(str(jsonResult).encode('utf-8'))
     Response = ClientSocket.recv(1024)
-    print(Response.decode('utf-8'))
+    print(Response)

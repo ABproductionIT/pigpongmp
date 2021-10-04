@@ -18,15 +18,23 @@ def threaded_client(connection):
     welcome = 'Welcome to the Server'
     connection.send(welcome.encode('utf-8'))
     while True:
-        data = listcli[0].recv(1024)
-        reply = data.decode('utf-8')
-        print(reply, connection)
-        if not data:
-            pass
-        listcli[1].send(reply.encode("utf-8"))
+        if connection == listcli[0]:
+            data = listcli[0].recv(1024)
+            reply = data.decode('utf-8')
+            print(reply, connection)
+            if not data:
+                pass
+            listcli[1].send(reply.encode("utf-8"))
+        elif connection == listcli[1]:
+            data = listcli[1].recv(1024)
+            reply = data.decode('utf-8')
+            print(reply, connection)
+            if not data:
+                pass
+            listcli[0].send(reply.encode("utf-8"))
 
 
-listcli=[]
+listcli = []
 
 while True:
     Client, address = ServerSocket.accept()
