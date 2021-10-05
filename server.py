@@ -1,5 +1,6 @@
 import socket
 from _thread import *
+import json
 
 ServerSocket = socket.socket()
 host = '127.0.0.1'
@@ -38,10 +39,22 @@ def threaded_client(connection):
 
 
 listcli = []
+listcode = []
 
 while True:
     Client, address = ServerSocket.accept()
     print('Connected to: ' + address[0] + ':' + str(address[1]))
+    dostup = Client.recv(2048)
+    code = json.loads(dostup)
+    if code['player'] == 1:
+       jsoncode = {code['code']: Client}
+       listcode.append(jsoncode)
+    elif code['player'] == 2:
+       jsoncode = {("p2" + code['code']): Client}
+       listcode.append(jsoncode)
+    else:
+        pass
+    print(listcode)
     listcli.append(Client)
     print(Client)
     start_new_thread(threaded_client, (Client, ))

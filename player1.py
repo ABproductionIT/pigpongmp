@@ -9,27 +9,16 @@ from random import randint
 import socket
 import json
 
-# socket serv for ball position send to player 2
-# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server.bind(("127.0.0.1", 12345))
-# server.listen()
-# user, addres = server.accept()
-#
-# socket serv for send player1 position to player2
-# server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server1.bind(("127.0.0.1", 12346))
-# server1.listen()
-# user1, addres1 = server1.accept()
 
-# socket clinet for incoming data from player2 position
-# client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# client1.connect(("127.0.0.1", 12347))
 ClientSocket = socket.socket()
 host = '127.0.0.1'
 port = 1233
 
 print('Waiting for connection')
 ClientSocket.connect((host, port))
+jsoncode = {"code": '1234', "player": 1}
+jsoncode = json.dumps(jsoncode)
+ClientSocket.send(str(jsoncode).encode('utf-8'))
 
 
 class PongPaddle(Widget):
@@ -57,10 +46,7 @@ class PongBall(Widget):
     # Заставим шарик двигаться
     def move(self):
         self.pos = Vector(*self.velocity) + self.pos
-        # make data to string for send
-        # sharik = str(self.pos[0]) + ", " + str(self.pos[1])
-        # send data about ball position x, y to player2
-        # user.send(sharik.encode("utf-8"))
+
 
 
 class PongGame(Widget):
@@ -79,10 +65,8 @@ class PongGame(Widget):
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
-        # send player1 data to player2
+        # send player1, & ball position data to player2
         p1data = str(self.player1.center_y)
-        # user1.send(p1data.encode("utf-8"))
-
         sharik = str(self.ball.x) + ", " + str(self.ball.y)
         jsonResult = {"player1": p1data, "ballpos": sharik}
         jsonResult = json.dumps(jsonResult)

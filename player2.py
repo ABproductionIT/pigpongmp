@@ -9,20 +9,6 @@ from random import randint
 import socket
 import json
 
-# client for ball position data
-# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# client.connect(("127.0.0.1", 12345))
-
-# client for player1 position data
-# client1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# client1.connect(("127.0.0.1", 12346))
-
-# server socket for send player2 position to player1
-# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server.bind(("127.0.0.1", 12347))
-# server.listen()
-# user, addres = server.accept()
-
 
 ClientSocket = socket.socket()
 host = '127.0.0.1'
@@ -30,6 +16,10 @@ port = 1233
 
 print('Waiting for connection')
 ClientSocket.connect((host, port))
+jsoncode = {"code": "1234", "player": 2}
+jsoncode = json.dumps(jsoncode)
+ClientSocket.send(str(jsoncode).encode('utf-8'))
+
 
 
 class PongPaddle(Widget):
@@ -56,10 +46,6 @@ class PongBall(Widget):
 
     # Заставим шарик двигаться
     def move(self, b):
-        # data = client.recv(1024)
-        # a = data.decode("utf-8")
-        # data from player1 ball position socket
-
         self.pos = b
 
 
@@ -84,7 +70,6 @@ class PongGame(Widget):
         jsonResult = {"player2": p}
         jsonResult = json.dumps(jsonResult)
         ClientSocket.send(str(jsonResult).encode('utf-8'))
-        # user.send(p.encode("utf-8")
         Response = ClientSocket.recv(1024)
         try:
             data = Response.decode('utf-8')
@@ -96,7 +81,6 @@ class PongGame(Widget):
 
         except:
             pass
-        # file1.close()
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):
             self.ball.velocity_y *= -1  # инверсируем текущую скорость по оси Y
@@ -119,8 +103,6 @@ class PongGame(Widget):
         # второй игрок может касаться только своей части экрана (правой)
         if touch.x > self.width - self.width / 3:
             self.player2.center_y = touch.y
-            # k = str(self.player2.center_y)
-            # client.send(k.encode("utf-8"))
 
 
 class PongApp(App):
