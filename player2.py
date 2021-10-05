@@ -16,7 +16,7 @@ port = 1233
 
 print('Waiting for connection')
 ClientSocket.connect((host, port))
-jsoncode = {"code": "1234", "player": 2}
+jsoncode = {"code": "1234", "player": 'player2'}
 jsoncode = json.dumps(jsoncode)
 ClientSocket.send(str(jsoncode).encode('utf-8'))
 
