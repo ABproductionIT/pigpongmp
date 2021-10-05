@@ -22,7 +22,6 @@ def threaded_client(connection):
         if connection == listcli[0]:
             data = listcli[0].recv(2048)
             reply = data.decode('utf-8')
-            print(reply, connection)
             if not data:
                 pass
             try:
@@ -32,14 +31,14 @@ def threaded_client(connection):
         elif connection == listcli[1]:
             data = listcli[1].recv(2048)
             reply = data.decode('utf-8')
-            print(reply, connection)
             if not data:
                 pass
             listcli[0].send(reply.encode("utf-8"))
 
 
 listcli = []
-listcode = []
+listcodep1 = []
+listcodep2 = []
 
 while True:
     Client, address = ServerSocket.accept()
@@ -48,13 +47,13 @@ while True:
     code = json.loads(dostup)
     if code['player'] == 1:
        jsoncode = {code['code']: Client}
-       listcode.append(jsoncode)
+       listcodep1.append(jsoncode)
     elif code['player'] == 2:
-       jsoncode = {("p2" + code['code']): Client}
-       listcode.append(jsoncode)
+       jsoncode = {code['code']: Client}
+       listcodep2.append(jsoncode)
     else:
         pass
-    print(listcode)
+    print(listcodep1, listcodep2)
     listcli.append(Client)
     print(Client)
     start_new_thread(threaded_client, (Client, ))
