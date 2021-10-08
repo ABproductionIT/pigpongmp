@@ -39,14 +39,18 @@ def threaded_client(connection, code):
                 pass
 
 while True:
-    print(playerList)
+    hasConnect = False
     Client, address = ServerSocket.accept()
     print('Connected to: ' + address[0] + ':' + str(address[1]))
     code = json.loads(Client.recv(2048))
     if code['code'] in playerList.keys():
-        playerList[code['code']][code['player']] = Client
+        if 'player2' not in playerList[code['code']]:
+            hasConnect = True
+            playerList[code['code']][code['player']] = Client
     else:
+        hasConnect = True
         playerList[code['code']] = {
             code['player']: Client
         }
-    start_new_thread(threaded_client, (Client, code['code'] ))
+    if hasConnect:
+        start_new_thread(threaded_client, (Client, code['code'] ))

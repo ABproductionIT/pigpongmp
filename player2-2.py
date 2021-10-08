@@ -1,4 +1,3 @@
-import vel as vel
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import (
@@ -7,6 +6,20 @@ from kivy.properties import (
 from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
+import socket
+import json
+
+
+ClientSocket = socket.socket()
+host = '127.0.0.1'
+port = 1233
+
+print('Waiting for connection')
+ClientSocket.connect((host, port))
+jsoncode = {"code": "222", "player": 'player2'}
+jsoncode = json.dumps(jsoncode)
+ClientSocket.send(str(jsoncode).encode('utf-8'))
+
 
 
 class PongPaddle(Widget):
@@ -19,9 +32,7 @@ class PongPaddle(Widget):
             offset = (ball.center_y - self.center_y) / (self.height / 2)
             bounced = Vector(-1 * vx, vy)
             vel = bounced * 1.1
-            print(vel)
-            if vel.x > 35 or vel.y > 35:
-                vel = bounced
+
             ball.velocity = vel.x, vel.y + offset
 
 
@@ -34,8 +45,9 @@ class PongBall(Widget):
     velocity = ReferenceListProperty(velocity_x, velocity_y)
 
     # Заставим шарик двигаться
-    def move(self):
-        self.pos = Vector(*self.velocity) + self.pos
+    def move(self, b):
+        self.pos = b
+
 
 
 class PongGame(Widget):
@@ -48,19 +60,30 @@ class PongGame(Widget):
         self.ball.velocity = Vector(vel[0], vel[1]).rotate(randint(0, 360))
 
     def update(self, dt):
-        self.ball.move()  # двигаем шарик в каждом обновлении экрана
 
         # проверка отскока шарика от панелек игроков
         self.player1.bounce_ball(self.ball)
         self.player2.bounce_ball(self.ball)
 
+        # this is send data about player2 position to player1
+        p = str(self.player2.center_y)
+        jsonResult = {"player2": p}
+        jsonResult = json.dumps(jsonResult)
+        ClientSocket.send(str(jsonResult).encode('utf-8'))
+        Response = ClientSocket.recv(1024)
+        try:
+            data = Response.decode('utf-8')
+            y2 = json.loads(data)
+            # data from player1  position socket
+            self.player1.center_y = float(y2['player1'])
+            b = list(map(float, y2['ballpos'].split(", ")))
+            self.ball.move(b)  # двигаем шарик в каждом обновлении экрана
+
+        except:
+            pass
         # отскок шарика по оси Y
         if (self.ball.y < 0) or (self.ball.top > self.height):
             self.ball.velocity_y *= -1  # инверсируем текущую скорость по оси Y
-
-        # отскок шарика по оси X
-        if ((self.ball.x < 5 or self.ball.x > self.width-50) and (self.ball.y < self.height/3 or self.ball.y > self.height*2/3)):
-            self.ball.velocity_x *= -1  # инверсируем текущую скорость по оси X
 
         # отскок шарика по оси X
         # тут если шарик смог уйти за панельку игрока, то есть игрок не успел отбить шарик
@@ -77,15 +100,9 @@ class PongGame(Widget):
 
     # Событие прикосновения к экрану
     def on_touch_move(self, touch):
-        # первый игрок может касаться только своей части экрана (левой)
-        if touch.x < self.width / 2.5:
-            self.player1.center_y = touch.y
-            self.player1.center_x = touch.x
-
         # второй игрок может касаться только своей части экрана (правой)
-        if touch.x > self.width - self.width / 2.5:
+        if touch.x > self.width - self.width / 3:
             self.player2.center_y = touch.y
-            self.player2.center_x = touch.x
 
 
 class PongApp(App):
